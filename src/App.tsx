@@ -414,6 +414,49 @@ function AboutPage({ t, isRtl }: { t: any, isRtl: boolean }) {
 }
 
 function ContactPage({ t, isRtl }: { t: any, isRtl: boolean }) {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) return;
+    
+    setStatus('submitting');
+
+    try {
+      // Using formsubmit.co to send emails directly from the frontend
+      const response = await fetch('https://formsubmit.co/ajax/omar.social.m@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          _subject: 'رسالة جديدة من موقع الواحة الرائدة (Contact Form)'
+        })
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        setStatus('error');
+        setTimeout(() => setStatus('idle'), 5000);
+      }
+    } catch (error) {
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
   return (
     <div className="py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -421,9 +464,6 @@ function ContactPage({ t, isRtl }: { t: any, isRtl: boolean }) {
           <h1 className="text-4xl font-bold text-stone-900 mb-4">{t.contactPageTitle}</h1>
           <div className="w-24 h-1 bg-emerald-500 mx-auto rounded-full mb-6"></div>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto">{t.contactPageDesc}</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-12 bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
           {/* Contact Info */}
           <div className="bg-emerald-900 p-10 text-white flex flex-col justify-center">
             <h3 className="text-2xl font-bold mb-8">{t.contactUs}</h3>
