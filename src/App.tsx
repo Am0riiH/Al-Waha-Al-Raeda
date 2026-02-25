@@ -39,6 +39,9 @@ const translations = {
     formEmail: "البريد الإلكتروني",
     formMessage: "الرسالة",
     formSubmit: "إرسال الرسالة",
+    sending: "جاري الإرسال...",
+    successMessage: "تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.",
+    errorMessage: "حدث خطأ أثناء إرسال الرسالة. يرجى المحاولة مرة أخرى.",
   },
   en: {
     companyName: "Al Waha Al Raeda",
@@ -77,6 +80,9 @@ const translations = {
     formEmail: "Email Address",
     formMessage: "Message",
     formSubmit: "Send Message",
+    sending: "Sending...",
+    successMessage: "Your message has been sent successfully! We will contact you soon.",
+    errorMessage: "An error occurred while sending the message. Please try again.",
   }
 };
 
@@ -464,6 +470,9 @@ function ContactPage({ t, isRtl }: { t: any, isRtl: boolean }) {
           <h1 className="text-4xl font-bold text-stone-900 mb-4">{t.contactPageTitle}</h1>
           <div className="w-24 h-1 bg-emerald-500 mx-auto rounded-full mb-6"></div>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto">{t.contactPageDesc}</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
           {/* Contact Info */}
           <div className="bg-emerald-900 p-10 text-white flex flex-col justify-center">
             <h3 className="text-2xl font-bold mb-8">{t.contactUs}</h3>
@@ -494,23 +503,45 @@ function ContactPage({ t, isRtl }: { t: any, isRtl: boolean }) {
 
           {/* Contact Form */}
           <div className="p-10">
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-2">{t.formName}</label>
-                <input type="text" id="name" className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white" placeholder={t.formName} />
+            {status === 'success' ? (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-8 text-center h-full flex flex-col justify-center items-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                </div>
+                <h4 className="text-xl font-bold mb-2">{t.successMessage}</h4>
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-2">{t.formEmail}</label>
-                <input type="email" id="email" className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white" placeholder={t.formEmail} />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-stone-700 mb-2">{t.formMessage}</label>
-                <textarea id="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white resize-none" placeholder={t.formMessage}></textarea>
-              </div>
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-sm">
-                {t.formSubmit}
-              </button>
-            </form>
+            ) : (
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {status === 'error' && (
+                  <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+                    {t.errorMessage}
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-2">{t.formName}</label>
+                  <input type="text" id="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white" placeholder={t.formName} />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-2">{t.formEmail}</label>
+                  <input type="email" id="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white" placeholder={t.formEmail} />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-stone-700 mb-2">{t.formMessage}</label>
+                  <textarea id="message" value={formData.message} onChange={handleChange} required rows={4} className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-stone-50 focus:bg-white resize-none" placeholder={t.formMessage}></textarea>
+                </div>
+                <button type="submit" disabled={status === 'submitting'} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-sm flex justify-center items-center">
+                  {status === 'submitting' ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t.sending}
+                    </span>
+                  ) : t.formSubmit}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
